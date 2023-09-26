@@ -2,9 +2,7 @@ from io import BytesIO
 from typing import Dict
 
 from openpyxl import load_workbook, Workbook
-import os
 from openpyxl.styles import PatternFill, Side, Alignment, Border
-import datetime
 
 
 def read_excel(file) -> Dict:
@@ -16,13 +14,19 @@ def read_excel(file) -> Dict:
     wb = load_workbook(filename=BytesIO(file.file.read()))
     sheet = wb['data']
     data = {}
-    for row in range(3, sheet.max_row + 1):
+    max_row = 3
+    max_column = 4
+    if sheet.max_row > 100002:
+        max_row = 100002
+    if sheet.max_column > 103:
+        max_column = 103
+    for row in range(3, max_row + 1):
         project_code = sheet.cell(row=row, column=1).value
         project_name = sheet.cell(row=row, column=2).value
         data[project_code] = {
             'name': project_name
         }
-        for col in range(3, sheet.max_column, 2):
+        for col in range(3, max_column, 2):
             data[project_code][sheet.cell(row=1, column=col).value.date()] = (
                 sheet.cell(row=row, column=col).value,
                 sheet.cell(row=row, column=col + 1).value

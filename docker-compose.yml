@@ -1,6 +1,12 @@
 version: '3.2'
 services:
-#  app:
+  app:
+    build:
+      context: app
+    ports:
+      - '8000:8000'
+    depends_on:
+      - postgres
 
   postgres:
     image: postgres

@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from models import Project, Base, ValueType, File, DataRecord
 from excel_file import write_excel
 
-engine = create_engine('postgresql+psycopg2://admin:admin@localhost/postgres')
+engine = create_engine('postgresql+psycopg2://admin:admin@postgres')
 Session = sessionmaker(bind=engine)
 session = Session()
 
