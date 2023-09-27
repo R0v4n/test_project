@@ -3,8 +3,8 @@ from typing import Dict
 from fastapi import FastAPI, File, UploadFile, Query, Path
 from fastapi.responses import FileResponse
 
-from excel_file import read_excel
-from database import add_file, add_data, init_db, download_data, \
+from app.src.excel_file import read_excel
+from app.src.database import add_file, add_data, init_db, download_data, \
     get_diagram_data
 
 app = FastAPI()
@@ -13,6 +13,11 @@ app = FastAPI()
 @app.on_event('startup')
 def init() -> Dict[str, bool]:
     init_db()
+    return {'result': True}
+
+
+@app.get('/route_for_test')
+def route_for_test():
     return {'result': True}
 
 
