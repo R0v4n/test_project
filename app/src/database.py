@@ -3,10 +3,10 @@ from typing import Dict
 
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import sessionmaker
-from app.src.models import Project, Base, ValueType, File, DataRecord
-from app.src.excel_file import write_excel
+from models import Project, Base, ValueType, File, DataRecord
+from excel_file import write_excel
 
-engine = create_engine('postgresql+psycopg2://admin:admin@postgres')
+engine = create_engine('postgresql+psycopg2://admin:admin@postgres/postgres')
 Session = sessionmaker(bind=engine)
 session = Session()
 

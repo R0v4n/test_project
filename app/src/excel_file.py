@@ -1,3 +1,4 @@
+import datetime
 from io import BytesIO
 from typing import Dict
 
@@ -11,11 +12,18 @@ def read_excel(file) -> Dict:
     :param file: uploaded file
     :return: dictionary with parsed data
     """
+    def add_values(date_value: datetime.date):
+        data[project_code][date_value] = (
+            sheet.cell(row=row, column=col).value,
+            sheet.cell(row=row, column=col + 1).value
+        )
+
+
     wb = load_workbook(filename=BytesIO(file.file.read()))
     sheet = wb['data']
     data = {}
-    max_row = 3
-    max_column = 4
+    max_row = sheet.max_row
+    max_column = sheet.max_column
     if sheet.max_row > 100002:
         max_row = 100002
     if sheet.max_column > 103:
@@ -27,10 +35,15 @@ def read_excel(file) -> Dict:
             'name': project_name
         }
         for col in range(3, max_column, 2):
-            data[project_code][sheet.cell(row=1, column=col).value.date()] = (
-                sheet.cell(row=row, column=col).value,
-                sheet.cell(row=row, column=col + 1).value
-            )
+            date_value = sheet.cell(row=1, column=col).value
+            if isinstance(date_value, datetime.datetime):
+                add_values(date_value.date())
+            elif isinstance(date_value, datetime.date):
+                add_values(date_value)
+            else:
+                day, month, year = tuple(map(int, date_value.split('.')))
+                date_value = datetime.date(year=year, month=month, day=day)
+                add_values(date_value)
     return data
 
 

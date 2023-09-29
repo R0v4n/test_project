@@ -8,4 +8,4 @@ COPY src/ /app/
 
 WORKDIR /app
 
-CMD ["uvicorn", "app:app", "--host=0.0.0.0"]
+CMD ["uvicorn", "main:app", "--host=0.0.0.0"]
