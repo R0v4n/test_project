@@ -12,6 +12,12 @@ app = FastAPI()
 
 @app.on_event('startup')
 def init() -> Dict[str, bool]:
+    # Создание таблиц БД лучше делать независимо от запуска приложения.
+    # Обычно используются инструменты для миграций, самое популярное alembic. Можно и свой скрипт написать отдельный,
+    # если решили не использовать инструменты в рамках тестового.
+    # Вообще без миграций никуда в разработке. В тестовом можно обойтись без них.
+    # Но желательно показать, что умеете это делать.
+    # В startup же можно просто подключиться к БД/проверить подключение.
     init_db()
     return {'result': True}
 
@@ -21,6 +27,7 @@ def route_for_test():
     return {'result': True}
 
 
+# зачем асинхронные функции без асинхронных вызовов в теле?
 @app.post("/uploadfile/")
 async def create_upload_file(file: UploadFile = File(...)) -> Dict[str, bool]:
     version = add_file(name=file.filename)
@@ -39,6 +46,8 @@ async def download(version: int = Path(
                         media_type='multipart/form-data')
 
 
+# Очень советую использовать pydantic. Он тесно интегрирован в fastapi, сэкономит время,
+# улучшит код, swagger, валидацию данных, и вообще просто удобен и прекрасен! Поменьше словарей побольше датаклассов!
 @app.get('/diagram/')
 def get_diagram_json(
         version: int = Query(

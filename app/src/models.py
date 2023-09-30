@@ -13,6 +13,8 @@ class Project(Base):
     name = Column(String(100), nullable=False)
 
 
+# В целом модель данных хорошая. Как вариант, вместо таблицы типов можно было использовать Enum и в коде python, и в
+# БД создать тип. Также Enum можно использовать для параметра запроса, что будет хорошо в swagger документации.
 class ValueType(Base):
     __tablename__ = 'types'
 

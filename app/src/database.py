@@ -6,8 +6,14 @@ from sqlalchemy.orm import sessionmaker
 from models import Project, Base, ValueType, File, DataRecord
 from excel_file import write_excel
 
+# Чтобы изменить адрес подключения, приходится лезть в исходный код. То есть на сервере, например,
+# нет возможности сконфигурировать приложение.
+# Обычно делается через переменные окружения или параметры точки входа в приложение.
+# Мне, например, очень нравится pydantic.BaseSettings использовать (во 2ой мажорной версии по другому называется).
 engine = create_engine('postgresql+psycopg2://admin:admin@postgres/postgres')
 Session = sessionmaker(bind=engine)
+# Одна сессия на всё приложение, не очень хорошее решение. Хорошим паттерном является создание одной сессии
+# на один вызов функции ендпоинта. В fastapi это обычно делают через dependency injection (Depends)
 session = Session()
 
 
@@ -17,6 +23,8 @@ def init_db() -> None:
     :return: None
     """
     Base.metadata.create_all(bind=engine)
+    # при каждом запуске будут дописываться 2 новые записи в таблицу!!! Опять же нужно разделить
+    # запуск приложения и создание таблиц БД.
     type_plan = ValueType(desc='plan')
     type_fact = ValueType(desc='fact')
     session.add_all((type_plan, type_fact))
@@ -32,9 +40,11 @@ def add_data(data: Dict, version: int) -> None:
     """
     projects = []
     records = []
-    exist_project = list(map(lambda x: x[0],
+    exist_project = list(map(lambda x: x[0],  # зачем тянуть все атрибуты из БД, когда нужны только коды?
                              session.query(Project.code).all()))
     for key in data:
+        # Здесь идёт линейный поиск по списку. Это плохо. Нет никаких препятствий использовать set.
+        # Также может быть полезно почитать про реализацию upsert в postgres
         if key not in exist_project:
             projects.append(Project(code=key, name=data[key]['name']))
         for record in data[key]:
@@ -100,6 +110,7 @@ def get_diagram_data(version: int, year: int, kind_of_value: str) -> Dict:
         raise ValueError('Kind of value should be plan or fact!')
     data = (session.query(DataRecord.date, func.sum(DataRecord.value))
             .filter(
+        # логичнее было бы извлечь из даты год и проверять равенство.
         DataRecord.date >= datetime.date(year=year, month=1, day=1),
         DataRecord.date <= datetime.date(year=year, month=12, day=31),
         DataRecord.file_version == version,
